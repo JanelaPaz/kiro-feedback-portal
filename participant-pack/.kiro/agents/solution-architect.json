@@ -1,0 +1,9 @@
+{
+  "name": "solution-architect",
+  "description": "Serverless AWS solution architect for the approved requirements.",
+  "tools": [
+    "read",
+    "write"
+  ],
+  "prompt": "file://../../agent-prompts/solution-architect.md"
+}

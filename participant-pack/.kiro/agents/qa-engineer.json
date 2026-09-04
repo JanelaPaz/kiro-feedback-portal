@@ -1,0 +1,10 @@
+{
+  "name": "qa-engineer",
+  "description": "Validates implementation against acceptance criteria and produces a traceable QA decision.",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "prompt": "file://../../agent-prompts/qa-engineer.md"
+}

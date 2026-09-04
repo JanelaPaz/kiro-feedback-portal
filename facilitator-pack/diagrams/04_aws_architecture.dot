@@ -1,0 +1,27 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="white", pad="0.4", nodesep="0.55", ranksep="0.8", splines=ortho, fontname="Arial", label="Workshop Feedback Portal — Target AWS Architecture", labelloc=t, fontsize=24];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=13, margin="0.18,0.12", color="#CBD5E1", penwidth=1.4, fillcolor="#F8FAFC"];
+  edge [fontname="Arial", fontsize=10, color="#64748B", penwidth=1.5, arrowsize=0.8];
+
+  browser [label="Browser\nAttendee / Organizer", fillcolor="#E0F2FE", color="#38BDF8"];
+  cf [label="Amazon CloudFront\nGenerated distribution URL\nHTTPS frontend", fillcolor="#F3E8FF", color="#A855F7"];
+  s3 [label="Amazon S3\nPRIVATE static assets\nOAC only", fillcolor="#ECFDF5", color="#10B981"];
+  api [label="API Gateway\nHTTP API", fillcolor="#FFF7ED", color="#FB923C"];
+  lambda [label="AWS Lambda\nPython", fillcolor="#FFF7ED", color="#FB923C"];
+  ddb [label="Amazon DynamoDB\nPAY_PER_REQUEST", fillcolor="#E0F2FE", color="#38BDF8"];
+  logs [label="CloudWatch Logs", fillcolor="#F8FAFC", color="#64748B"];
+  tf [shape=folder, label="Terraform\nprovisions all resources", fillcolor="#FEF3C7", color="#F59E0B"];
+
+  browser -> cf [label="GET static site"];
+  cf -> s3 [label="signed OAC request"];
+  browser -> api [label="POST /feedback\nGET /feedback"];
+  api -> lambda;
+  lambda -> ddb [label="PutItem / Scan"];
+  lambda -> logs [label="logs"];
+
+  tf -> cf [style=dashed];
+  tf -> s3 [style=dashed];
+  tf -> api [style=dashed];
+  tf -> lambda [style=dashed];
+  tf -> ddb [style=dashed];
+}

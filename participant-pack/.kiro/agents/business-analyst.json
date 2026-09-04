@@ -1,0 +1,9 @@
+{
+  "name": "business-analyst",
+  "description": "Business analyst for requirements elicitation and acceptance criteria.",
+  "tools": [
+    "read",
+    "write"
+  ],
+  "prompt": "file://../../agent-prompts/business-analyst.md"
+}

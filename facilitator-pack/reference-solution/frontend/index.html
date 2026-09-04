@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Workshop Feedback</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="card">
+    <h1>Workshop Feedback</h1>
+    <p>Rate the session and optionally leave a comment.</p>
+
+    <form id="feedback-form">
+      <label for="workshop-topic">Workshop topic</label>
+      <input id="workshop-topic" maxlength="100" required>
+      <label for="rating">Rating</label>
+      <select id="rating" required>
+        <option value="">Select a rating</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+
+      <label for="comment">Comment <span>(optional)</span></label>
+      <textarea id="comment" maxlength="500" rows="5"></textarea>
+
+      <button type="submit">Submit feedback</button>
+      <p id="message" role="status"></p>
+    </form>
+
+    <p><a href="organizer.html">Organizer review</a></p>
+  </main>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

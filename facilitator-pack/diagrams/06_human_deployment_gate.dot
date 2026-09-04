@@ -1,0 +1,17 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="white", pad="0.45", nodesep="0.58", ranksep="0.75", splines=ortho, fontname="Arial", label="Automated SDLC, Human-Controlled Deployment", labelloc=t, fontsize=24];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=13, margin="0.18,0.12", color="#CBD5E1", penwidth=1.4, fillcolor="#F8FAFC"];
+  edge [fontname="Arial", fontsize=10, color="#64748B", penwidth=1.5, arrowsize=0.8];
+
+  gates [label="Automated SDLC Gates\nRequirements ✓\nArchitecture ✓\nQA ✓  Security ✓", fillcolor="#EDE9FE", color="#8B5CF6"];
+  plan [label="DevOps\nterraform validate\nterraform plan", fillcolor="#ECFDF5", color="#10B981"];
+  human [shape=diamond, label="HUMAN\nAPPROVAL", fillcolor="#FEE2E2", color="#EF4444", penwidth=2];
+  apply [label="DevOps\nterraform apply", fillcolor="#ECFDF5", color="#10B981"];
+  aws [label="AWS\nResources Created", fillcolor="#FFF7ED", color="#FB923C"];
+  verify [label="Live Smoke Tests\n+ Release Report", fillcolor="#E0F2FE", color="#38BDF8"];
+
+  gates -> plan -> human;
+  human -> apply [label="APPROVE"];
+  human -> plan [label="REJECT / revise", color="#DC2626"];
+  apply -> aws -> verify;
+}

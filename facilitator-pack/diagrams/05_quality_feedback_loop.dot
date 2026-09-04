@@ -1,0 +1,26 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="white", pad="0.3", nodesep="0.46", ranksep="0.62", splines=ortho, fontname="Arial", label="Independent Quality Gates + Automated Feedback Loop", labelloc=t, fontsize=24, ratio="fill", size="13.333,7.5!"];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=12, margin="0.16,0.10", color="#CBD5E1", penwidth=1.4, fillcolor="#F8FAFC"];
+  edge [fontname="Arial", fontsize=9, color="#64748B", penwidth=1.5, arrowsize=0.8];
+
+  impl [label="Developer\nImplementation", fillcolor="#FFF7ED", color="#FB923C"];
+  qa [label="QA Engineer\nDoes it satisfy\nacceptance criteria?", fillcolor="#FDF4FF", color="#D946EF"];
+  sec [label="Security Reviewer\nIs risk acceptable\nfor the POC?", fillcolor="#FEF2F2", color="#EF4444"];
+  orch [label="ORCHESTRATOR\naggregates statuses", fillcolor="#EDE9FE", color="#8B5CF6", penwidth=2];
+  gate [shape=diamond, label="BOTH\nPASS?", fillcolor="#FEF3C7", color="#F59E0B"];
+  fix [label="Developer\nremediates findings", fillcolor="#FFF7ED", color="#FB923C"];
+  ops [label="DevOps\nDeployment Preparation", fillcolor="#ECFDF5", color="#10B981"];
+
+  {rank=same; qa; sec;}
+  {rank=same; fix; ops;}
+
+  impl -> qa;
+  impl -> sec;
+  qa -> orch;
+  sec -> orch;
+  orch -> gate;
+  gate -> ops [xlabel="YES"];
+  gate -> fix [xlabel="NO", color="#DC2626"];
+  fix -> qa [xlabel="rerun", color="#DC2626", constraint=false];
+  fix -> sec [xlabel="rerun", color="#DC2626", constraint=false];
+}

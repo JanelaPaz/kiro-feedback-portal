@@ -1,0 +1,15 @@
+digraph G {
+  graph [layout=neato, overlap=false, bgcolor="white", pad="0.45", fontname="Arial", label="Who Owns What?", labelloc=t, fontsize=24];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=13, margin="0.18,0.12", color="#CBD5E1", penwidth=1.4, fillcolor="#F8FAFC"];
+  edge [color="#94A3B8", penwidth=1.6, arrowsize=0.7];
+
+  orch [label="ORCHESTRATOR\nControls state, delegation,\nretries and gates", pos="0,0!", width=2.5, fillcolor="#EDE9FE", color="#8B5CF6", penwidth=2.2];
+  ba [label="BUSINESS ANALYST\nWhat needs to be built?\nRequirements + acceptance criteria", pos="-4,2.7!", width=3.0, fillcolor="#E0F2FE", color="#38BDF8"];
+  arch [label="SOLUTION ARCHITECT\nHow should it be structured?\nArchitecture + API + data model", pos="0,3.8!", width=3.0, fillcolor="#F0FDFA", color="#14B8A6"];
+  dev [label="DEVELOPER\nHow do we implement it?\nCode + tests + Terraform", pos="4,2.7!", width=3.0, fillcolor="#FFF7ED", color="#FB923C"];
+  qa [label="QA ENGINEER\nDoes it satisfy requirements?\nTraceability + test evidence", pos="4,-2.7!", width=3.0, fillcolor="#FDF4FF", color="#D946EF"];
+  sec [label="SECURITY REVIEWER\nIs risk acceptable?\nFindings + PASS / FAIL", pos="0,-3.8!", width=3.0, fillcolor="#FEF2F2", color="#EF4444"];
+  ops [label="DEVOPS ENGINEER\nCan we safely deploy and verify?\nTerraform + smoke tests", pos="-4,-2.7!", width=3.0, fillcolor="#ECFDF5", color="#10B981"];
+
+  orch -> ba; orch -> arch; orch -> dev; orch -> qa; orch -> sec; orch -> ops;
+}

@@ -1,0 +1,10 @@
+{
+  "name": "devops-engineer",
+  "description": "Validates Terraform, prepares deployment, deploys after explicit approval, and smoke-tests AWS.",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "prompt": "file://../../agent-prompts/devops-engineer.md"
+}

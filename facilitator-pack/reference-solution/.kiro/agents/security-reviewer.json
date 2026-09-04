@@ -1,0 +1,10 @@
+{
+  "name": "security-reviewer",
+  "description": "Performs independent application and Terraform security review without modifying production code.",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "prompt": "file://../../agent-prompts/security-reviewer.md"
+}

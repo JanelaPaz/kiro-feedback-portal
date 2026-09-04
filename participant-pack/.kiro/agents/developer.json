@@ -1,0 +1,10 @@
+{
+  "name": "developer",
+  "description": "Implements the approved frontend, Python backend, tests, and Terraform without deploying.",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "prompt": "file://../../agent-prompts/developer.md"
+}

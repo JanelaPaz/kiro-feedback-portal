@@ -1,0 +1,22 @@
+{
+  "name": "sdlc-orchestrator",
+  "description": "Coordinates the supplied specialist agents through initial delivery and change-request SDLC workflows.",
+  "tools": ["read", "write", "shell", "subagent"],
+  "resources": [
+    "file://../../SDLC_WORKFLOW.md",
+    "file://../../WORKSHOP_CONSTRAINTS.md"
+  ],
+  "toolsSettings": {
+    "subagent": {
+      "availableAgents": [
+        "business-analyst",
+        "solution-architect",
+        "developer",
+        "qa-engineer",
+        "security-reviewer",
+        "devops-engineer"
+      ]
+    }
+  },
+  "prompt": "file://../../agent-prompts/sdlc-orchestrator.md"
+}

@@ -1,0 +1,27 @@
+digraph G {
+  graph [rankdir=TB, bgcolor="white", pad="0.25", nodesep="0.38", ranksep="0.65", splines=ortho, fontname="Arial", label="Orchestrator as an SDLC State Machine", labelloc=t, fontsize=24, ratio="fill", size="13.333,7.5!"];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=12, margin="0.14,0.09", color="#CBD5E1", fillcolor="#F8FAFC"];
+  edge [fontname="Arial", fontsize=9, color="#64748B", penwidth=1.4, arrowsize=0.75];
+
+  intake [label="INTAKE"];
+  req [label="REQUIREMENTS\nBA_STATUS: PASS"];
+  design [label="DESIGN\nARCH_STATUS: PASS"];
+  impl [label="IMPLEMENTATION\nDEV_STATUS: PASS"];
+  val [label="VALIDATION\nQA + Security PASS"];
+  prep [label="DEPLOYMENT PREPARATION\nREADY_FOR_APPROVAL"];
+  human [shape=diamond, label="HUMAN\nAPPROVAL", fillcolor="#FEE2E2", color="#EF4444"];
+  deploy [label="DEPLOYMENT"];
+  verify [label="VERIFICATION"];
+  complete [label="COMPLETED", fillcolor="#DCFCE7", color="#22C55E"];
+
+  {rank=same; intake; req; design; impl; val;}
+  {rank=same; prep; human; deploy; verify; complete;}
+
+  intake -> req -> design -> impl -> val -> prep -> human -> deploy -> verify -> complete;
+  req -> req [xlabel="clarify", color="#DC2626"];
+  design -> req [xlabel="requirements conflict", color="#DC2626", constraint=false];
+  val -> impl [xlabel="QA / Security FAIL", color="#DC2626", constraint=false];
+  human -> prep [xlabel="REJECT", color="#DC2626", constraint=false];
+  verify -> impl [xlabel="app defect", color="#DC2626", constraint=false];
+  verify -> prep [xlabel="deploy/config defect", color="#DC2626", constraint=false];
+}
