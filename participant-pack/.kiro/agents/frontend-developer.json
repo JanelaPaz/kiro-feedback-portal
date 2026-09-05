@@ -1,0 +1,10 @@
+{
+  "name": "frontend-developer",
+  "description": "Implements the approved static browser experience and API integration without changing backend, Terraform, or architecture.",
+  "tools": [
+    "read",
+    "write",
+    "shell"
+  ],
+  "prompt": "file://../../agent-prompts/frontend-developer.md"
+}
