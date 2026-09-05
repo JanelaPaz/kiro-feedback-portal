@@ -2,20 +2,21 @@
 
 This file is the authoritative process definition that the participant-created `sdlc-orchestrator` agent must read and enforce.
 
-The orchestrator controls workflow state, delegates to specialist agents, validates gates, routes failures, preserves artifacts, and stops for human approval before deployment. It must not perform specialist work itself.
+The orchestrator controls lifecycle state, delegates specialist work, validates gates, routes failures to the correct owner, preserves artifacts, and stops for human approval before deployment. It must not perform specialist work itself.
 
 ## Authoritative inputs
 
-- `BUSINESS_REQUEST.md` — stakeholder intent for the initial delivery
+- `BUSINESS_REQUEST.md` — initial stakeholder intent
 - `WORKSHOP_CONSTRAINTS.md` — engineering/platform boundaries
 - `SDLC_WORKFLOW.md` — lifecycle and change-management rules
-- `change-requests/CR-XXX.md` — future approved change requests, when provided
+- `change-requests/CR-XXX.md` — later change requests when supplied
 
 ## Available specialist agents
 
 - `business-analyst`
 - `solution-architect`
-- `developer`
+- `frontend-developer`
+- `backend-developer`
 - `qa-engineer`
 - `security-reviewer`
 - `devops-engineer`
@@ -24,17 +25,15 @@ The orchestrator controls workflow state, delegates to specialist agents, valida
 
 # Entry routing
 
-The orchestrator must first determine the type of work.
-
 ## Initial delivery
 
-If there is no completed release and the task is based on `BUSINESS_REQUEST.md`, start at `INTAKE`.
+If no completed release exists and work is based on `BUSINESS_REQUEST.md`, start at `INTAKE`.
 
 ## Change request
 
-If a completed release already exists and the user supplies `change-requests/CR-XXX.md`, start at `CHANGE_REQUEST_INTAKE`.
+If a completed release exists and the user supplies `change-requests/CR-XXX.md`, start at `CHANGE_REQUEST_INTAKE`.
 
-A change request must **never** be sent directly to the Developer. It must begin with business impact analysis.
+A change request must **never** go directly to either implementation developer. It begins with Business Analyst impact analysis.
 
 ---
 
@@ -64,84 +63,76 @@ COMPLETED
 
 ## INTAKE
 
-Actions:
-
-- confirm `BUSINESS_REQUEST.md`, `WORKSHOP_CONSTRAINTS.md`, and this workflow exist;
-- initialize lifecycle state;
-- invoke `business-analyst`.
+Confirm the business request, constraints, and workflow exist, initialize lifecycle state, and invoke `business-analyst`.
 
 ## REQUIREMENTS
 
 Owner: `business-analyst`
 
-Inputs:
+Inputs: `BUSINESS_REQUEST.md`, `WORKSHOP_CONSTRAINTS.md`
 
-- `BUSINESS_REQUEST.md`
-- `WORKSHOP_CONSTRAINTS.md`
+Output: `docs/requirements.md`
 
-Expected artifact:
-
-- `docs/requirements.md`
-
-Required terminal status:
+Gate:
 
 ```text
 BA_STATUS: PASS
 ```
 
-If the BA returns `BA_STATUS: BLOCKED`:
+If `BA_STATUS: BLOCKED`, surface only the BA's unresolved stakeholder questions to the human, collect answers, and re-invoke BA until PASS.
 
-1. surface only unresolved stakeholder questions to the human;
-2. collect stakeholder answers;
-3. re-invoke the Business Analyst with those answers;
-4. remain in `REQUIREMENTS` until PASS.
-
-Gate checks:
-
-- actors identified;
-- functional requirements present;
-- applicable non-functional requirements present;
-- acceptance criteria are testable;
-- assumptions and out-of-scope items documented;
-- no unresolved business blocker remains.
+Requirements must include actors, functional/non-functional requirements, testable acceptance criteria, assumptions, out-of-scope items, and no unresolved blocker.
 
 ## DESIGN
 
 Owner: `solution-architect`
 
-Inputs:
+Inputs: `WORKSHOP_CONSTRAINTS.md`, `docs/requirements.md`
 
-- `WORKSHOP_CONSTRAINTS.md`
-- `docs/requirements.md`
-
-Expected artifacts:
+Outputs:
 
 - `docs/architecture.md`
 - `docs/api-contract.md`
 - `docs/data-model.md`
 
-Required terminal status:
+Gate:
 
 ```text
 ARCH_STATUS: PASS
 ```
 
-Gate checks:
+Design must cover requirements, stay inside the approved service catalog, remain serverless/POC-sized, keep frontend storage private, use Python backend + Terraform, and introduce no Route 53/ACM/custom domain.
 
-- all functional requirements are covered;
-- only approved AWS services are used;
-- solution remains serverless/managed and POC-sized;
-- frontend storage is not directly public;
-- no Route 53, ACM, or custom domain is introduced;
-- backend runtime is Python;
-- infrastructure is Terraform;
-- no new business requirement is invented.
-
-If a requirements conflict is found, route it to the Business Analyst and rerun design after requirements are corrected.
+If the problem is a requirements conflict, route back to BA rather than having Architect invent business behavior.
 
 ## IMPLEMENTATION
 
-Owner: `developer`
+Owners, run independently and preferably in parallel:
+
+- `frontend-developer`
+- `backend-developer`
+- `devops-engineer` in **Infrastructure Implementation** mode
+
+### Frontend workstream
+
+Inputs:
+
+- `WORKSHOP_CONSTRAINTS.md`
+- `docs/requirements.md`
+- `docs/architecture.md`
+- `docs/api-contract.md`
+
+Owns: `frontend/`
+
+Output: `docs/frontend-implementation-summary.md`
+
+Gate signal:
+
+```text
+FRONTEND_STATUS: PASS
+```
+
+### Backend workstream
 
 Inputs:
 
@@ -151,26 +142,43 @@ Inputs:
 - `docs/api-contract.md`
 - `docs/data-model.md`
 
-Expected implementation areas:
+Owns: `backend/`, backend-focused `tests/`
+
+Output: `docs/backend-implementation-summary.md`
+
+Gate signal:
 
 ```text
-frontend/
-backend/
-tests/
-terraform/
+BACKEND_STATUS: PASS
 ```
 
-Expected artifact:
+### Infrastructure workstream
 
-- `docs/implementation-summary.md`
+Owner: `devops-engineer` in Infrastructure Implementation mode
 
-Required terminal status:
+Inputs: approved requirements/design/contracts.
+
+Owns: `terraform/`
+
+Output: `docs/infrastructure-implementation-summary.md`
+
+Gate signal:
 
 ```text
-DEV_STATUS: PASS
+INFRA_STATUS: PASS
 ```
 
-Developer may implement and run local checks but must not deploy to AWS.
+No deployment is allowed in this mode.
+
+### Implementation gate
+
+Do not enter VALIDATION until all three are PASS:
+
+```text
+FRONTEND_STATUS: PASS
+BACKEND_STATUS: PASS
+INFRA_STATUS: PASS
+```
 
 ## VALIDATION
 
@@ -179,33 +187,45 @@ Owners, run independently and preferably in parallel:
 - `qa-engineer`
 - `security-reviewer`
 
-Expected artifacts:
+Outputs:
 
 - `docs/qa-report.md`
 - `docs/security-report.md`
 
-Required terminal statuses:
+Gate:
 
 ```text
 QA_STATUS: PASS
 SECURITY_STATUS: PASS
 ```
 
-### Failure loop
+### Failure routing
 
-If either validator returns FAIL:
+Every blocking QA/Security finding must identify a remediation owner.
 
-1. aggregate actionable findings;
-2. invoke Developer with those findings plus approved artifacts;
-3. Developer fixes only what is necessary;
-4. after any code or Terraform change, rerun both QA and Security;
-5. repeat until both PASS.
+The orchestrator must route each finding only to the owner named in the finding:
 
-The orchestrator may not waive a specialist finding.
+- frontend behavior → `frontend-developer`
+- backend behavior → `backend-developer`
+- Terraform/infrastructure → `devops-engineer`
+- architecture contract problem → `solution-architect`
+- business requirement ambiguity/conflict → `business-analyst`
+
+After any remediation that changes application code or Terraform, rerun **both QA and Security** against the integrated result. The orchestrator may not waive a finding.
 
 ## DEPLOYMENT_PREPARATION
 
-Owner: `devops-engineer`
+Owner: `devops-engineer` in Deployment Preparation mode
+
+Preconditions:
+
+```text
+FRONTEND_STATUS: PASS
+BACKEND_STATUS: PASS
+INFRA_STATUS: PASS
+QA_STATUS: PASS
+SECURITY_STATUS: PASS
+```
 
 Minimum commands:
 
@@ -216,73 +236,59 @@ terraform validate
 terraform plan
 ```
 
-Expected artifact:
+Output: `docs/deployment-plan.md`
 
-- `docs/deployment-plan.md`
-
-Required terminal status:
+Gate:
 
 ```text
 DEVOPS_STATUS: READY_FOR_APPROVAL
 ```
 
-The plan summary must include add/change/destroy counts, important IAM/security changes, region/account when detectable, validation result, and deployment risks.
-
-DevOps must not run `terraform apply` yet.
+The report must summarize add/change/destroy counts, important IAM/security changes, account/region when detectable, validation results, and risks. `terraform apply` is forbidden here.
 
 ## AWAITING_HUMAN_APPROVAL
 
-This is the only mandatory human control gate after requirements clarification.
+The orchestrator presents the plan summary and stops.
 
-The orchestrator must present the deployment-plan summary and stop.
-
-Exact approval phrase:
+Only this exact participant approval authorizes deployment:
 
 ```text
 APPROVE DEPLOY
 ```
 
-Without that explicit approval, deployment is forbidden.
-
 ## DEPLOYMENT
 
 Owner: `devops-engineer`
 
-After approval only:
-
-- run/apply the approved Terraform plan;
-- capture resulting CloudFront and API outputs;
-- continue to verification.
+After approval only, apply the approved Terraform plan and capture the generated CloudFront and API outputs.
 
 ## VERIFICATION
 
 Owner: `devops-engineer`
 
-Perform live smoke tests against the deployed environment, including at minimum:
+Smoke-test the actual deployed environment. At minimum verify frontend reachability, health, valid submission, invalid rating rejection, organizer retrieval, and persistence.
 
-- CloudFront frontend loads;
-- health/API endpoint works;
-- valid feedback can be submitted;
-- invalid rating is rejected;
-- organizer feedback retrieval works.
+Output: `docs/release-report.md`
 
-Expected artifact:
-
-- `docs/release-report.md`
-
-Required terminal status:
+Required status:
 
 ```text
-DEVOPS_STATUS: PASS
+DEVOPS_STATUS: DEPLOYED
 ```
 
-The orchestrator may mark the workflow `COMPLETED` only after live verification passes.
+## COMPLETED
+
+The orchestrator may declare:
+
+```text
+SDLC_STATUS: COMPLETED
+```
+
+only when every required gate passed, human deployment approval was obtained, deployment succeeded, and live verification passed.
 
 ---
 
 # Workflow B — Change request
-
-A completed system may receive a new business change request.
 
 ```text
 CHANGE_REQUEST_INTAKE
@@ -306,147 +312,91 @@ VERIFICATION
 COMPLETED
 ```
 
-For a change request identified as `CR-XXX`, preserve the audit trail under:
-
-```text
-docs/change-requests/CR-XXX/
-```
-
-Canonical documentation in `docs/` must also be updated to describe the current system after the change.
-
 ## CHANGE_REQUEST_INTAKE
 
-Actions:
+Inputs:
 
-- verify a completed prior release exists;
-- read `change-requests/CR-XXX.md`;
-- create/preserve a dedicated change-request artifact directory;
-- invoke the Business Analyst.
+- existing completed release and canonical `docs/`
+- `change-requests/CR-XXX.md`
+
+First owner: `business-analyst`.
+
+Never route a CR directly to Frontend or Backend Developer.
 
 ## REQUIREMENTS_IMPACT
 
 Owner: `business-analyst`
 
-Inputs:
+Inputs: current `docs/requirements.md`, CR file, constraints.
 
-- current `docs/requirements.md`
-- `change-requests/CR-XXX.md`
-- `WORKSHOP_CONSTRAINTS.md`
-
-Expected outputs:
+Outputs:
 
 - `docs/change-requests/CR-XXX/requirements-impact.md`
 - updated canonical `docs/requirements.md`
 
-Required status:
+Gate: `BA_STATUS: PASS`
 
-```text
-BA_STATUS: PASS
-```
-
-The BA must identify changed/new acceptance criteria and explicitly state unaffected requirements.
-
-If business clarification is needed, return BLOCKED and ask the human only those questions.
+The impact artifact must identify changed/new requirements, acceptance criteria, compatibility/legacy assumptions, and out-of-scope impacts.
 
 ## DESIGN_IMPACT
 
 Owner: `solution-architect`
 
-Inputs:
+Inputs: CR, requirements impact, updated requirements, current architecture/API/data model.
 
-- updated `docs/requirements.md`
-- current `docs/architecture.md`
-- current `docs/api-contract.md`
-- current `docs/data-model.md`
-- `docs/change-requests/CR-XXX/requirements-impact.md`
-- `WORKSHOP_CONSTRAINTS.md`
-
-Expected outputs:
+Outputs:
 
 - `docs/change-requests/CR-XXX/architecture-impact.md`
-- update canonical architecture/API/data-model only where required
+- updated canonical architecture/API/data-model docs where needed
 
-Required status:
+Gate: `ARCH_STATUS: PASS`
 
-```text
-ARCH_STATUS: PASS
-```
+The impact must explicitly state which layers are changed or unchanged, including whether AWS topology/IAM/Terraform resource types change.
 
-The architect must distinguish between:
+## IMPLEMENTATION — change request
 
-- topology changes;
-- application/API/data changes;
-- unchanged components.
+Invoke only workstreams affected by the approved impact, but require unaffected workstreams to remain compatible with the current contracts.
 
-## IMPLEMENTATION for a change
+Typical cross-layer CRs may invoke Frontend and Backend in parallel. Invoke DevOps Infrastructure Implementation mode when Terraform packaging/configuration or infrastructure must change.
 
-Owner: `developer`
-
-Inputs include all approved canonical documents plus the CR impact artifacts.
-
-Expected output:
-
-- implementation changes;
-- updated tests;
-- `docs/change-requests/CR-XXX/implementation-summary.md`.
-
-Do not bypass the CR scope or silently redesign unrelated components.
-
-## VALIDATION for a change
-
-Run QA and Security independently.
-
-Expected outputs:
-
-- `docs/change-requests/CR-XXX/qa-report.md`
-- `docs/change-requests/CR-XXX/security-report.md`
-
-QA must verify:
-
-- the new/changed acceptance criteria;
-- regression of previously approved core requirements.
-
-Security must review the changed attack surface plus any affected infrastructure/IAM configuration.
-
-Both must PASS before deployment preparation.
-
-## DEPLOYMENT_PREPARATION for a change
-
-DevOps runs Terraform formatting/validation/plan again and writes:
-
-- `docs/change-requests/CR-XXX/deployment-plan.md`
-
-Status must be `READY_FOR_APPROVAL`.
-
-A change may legitimately produce no new AWS topology. The orchestrator must not require new resources merely because a change request exists.
-
-## HUMAN APPROVAL, DEPLOYMENT, AND VERIFICATION
-
-The same explicit human gate applies:
+Preserve CR implementation evidence under:
 
 ```text
-APPROVE DEPLOY
+docs/change-requests/CR-XXX/
 ```
 
-After approval, DevOps deploys the changed release and performs smoke/regression verification.
+Use:
 
-Expected final CR artifact:
+- `frontend-implementation-summary.md` when frontend changed;
+- `backend-implementation-summary.md` when backend changed;
+- `infrastructure-implementation-summary.md` when Terraform changed.
 
-- `docs/change-requests/CR-XXX/release-report.md`
+The canonical application directories represent the current release candidate.
 
-Canonical `docs/release-report.md` should describe the latest deployed release.
+## VALIDATION — change request
 
----
+Always run both QA and Security after implementation, even if only one application layer changed.
 
-# Orchestrator control principles
+QA must include new acceptance criteria **and regression coverage** for existing behavior.
 
-The orchestrator must:
+Write CR-specific reports under:
 
-- read this file before starting or resuming work;
-- track the current workflow and state;
-- invoke only the specialist(s) assigned to the current state;
-- verify required artifacts and terminal statuses;
-- never perform specialist work itself;
-- never skip directly from a change request to implementation;
-- never deploy without explicit human approval;
-- preserve a traceable artifact history.
+```text
+docs/change-requests/CR-XXX/qa-report.md
+docs/change-requests/CR-XXX/security-report.md
+```
+
+Gate: both PASS.
+
+Failure routing follows the same remediation-owner rules as the initial workflow.
+
+## DEPLOYMENT PREPARATION / APPROVAL / DEPLOYMENT / VERIFICATION
+
+Repeat the same DevOps and human-approval gates as initial delivery.
+
+Preserve CR-specific:
+
+- `deployment-plan.md`
+- `release-report.md`
+
+under `docs/change-requests/CR-XXX/` while canonical docs/application represent the currently deployed system.

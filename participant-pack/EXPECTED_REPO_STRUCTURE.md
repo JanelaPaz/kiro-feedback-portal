@@ -1,8 +1,8 @@
 # Expected Repository Shape
 
-Exact implementation filenames may vary, but a successful submission should contain the orchestrator, supplied specialists, auditable SDLC artifacts, application code, tests, and Terraform.
+Exact implementation filenames may vary, but a successful submission should contain the participant-created orchestrator, seven supplied specialists, auditable SDLC artifacts, application code, tests, and Terraform.
 
-After the **initial release**, the repository should resemble:
+After the initial release:
 
 ```text
 feedback-portal/
@@ -11,18 +11,20 @@ feedback-portal/
 ├── SDLC_WORKFLOW.md
 ├── .kiro/
 │   └── agents/
-│       ├── sdlc-orchestrator.json        # created by participant
+│       ├── sdlc-orchestrator.json          # participant-created
 │       ├── business-analyst.json
 │       ├── solution-architect.json
-│       ├── developer.json
+│       ├── frontend-developer.json
+│       ├── backend-developer.json
 │       ├── qa-engineer.json
 │       ├── security-reviewer.json
 │       └── devops-engineer.json
 ├── agent-prompts/
-│   ├── sdlc-orchestrator.md              # created by participant
+│   ├── sdlc-orchestrator.md                # participant-created
 │   ├── business-analyst.md
 │   ├── solution-architect.md
-│   ├── developer.md
+│   ├── frontend-developer.md
+│   ├── backend-developer.md
 │   ├── qa-engineer.md
 │   ├── security-reviewer.md
 │   └── devops-engineer.md
@@ -31,7 +33,9 @@ feedback-portal/
 │   ├── architecture.md
 │   ├── api-contract.md
 │   ├── data-model.md
-│   ├── implementation-summary.md
+│   ├── frontend-implementation-summary.md
+│   ├── backend-implementation-summary.md
+│   ├── infrastructure-implementation-summary.md
 │   ├── qa-report.md
 │   ├── security-report.md
 │   ├── deployment-plan.md
@@ -42,7 +46,7 @@ feedback-portal/
 └── terraform/
 ```
 
-After a change request such as `CR-001`, preserve the audit trail rather than overwriting all evidence:
+After a change request such as `CR-001`, preserve its audit trail:
 
 ```text
 ├── change-requests/
@@ -52,11 +56,13 @@ After a change request such as `CR-001`, preserve the audit trail rather than ov
         └── CR-001/
             ├── requirements-impact.md
             ├── architecture-impact.md
-            ├── implementation-summary.md
+            ├── frontend-implementation-summary.md      # if frontend changed
+            ├── backend-implementation-summary.md       # if backend changed
+            ├── infrastructure-implementation-summary.md # if Terraform changed
             ├── qa-report.md
             ├── security-report.md
             ├── deployment-plan.md
             └── release-report.md
 ```
 
-The canonical files in `docs/` should represent the **current deployed system**, while `docs/change-requests/CR-001/` records how that change moved through the lifecycle.
+Canonical files under `docs/` and the application directories represent the **current deployed system**. CR folders explain how each change moved through the lifecycle.

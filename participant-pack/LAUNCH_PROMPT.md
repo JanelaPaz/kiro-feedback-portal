@@ -1,27 +1,25 @@
 # Launch Prompt
 
-After you have created and selected your `sdlc-orchestrator` agent, start the initial delivery with:
+After creating and selecting your `sdlc-orchestrator` agent, send it this prompt:
 
 ```text
-Take BUSINESS_REQUEST.md through the complete SDLC.
+Take BUSINESS_REQUEST.md through the complete SDLC defined in SDLC_WORKFLOW.md.
 
-Use SDLC_WORKFLOW.md as the authoritative lifecycle and WORKSHOP_CONSTRAINTS.md as the engineering boundary.
+Follow WORKSHOP_CONSTRAINTS.md and use the supplied specialist agents for their assigned responsibilities. Run independent work in parallel where the workflow allows it.
 
-Coordinate the supplied specialist agents. Do not perform their work yourself.
+You are responsible for orchestration only. Do not perform specialist work yourself.
 
-Ask me only when the Business Analyst needs stakeholder clarification or when DevOps has completed terraform plan and requires deployment approval.
+Ask me only when:
+1. the Business Analyst requires stakeholder clarification, or
+2. DevOps has completed terraform plan and deployment requires my explicit approval.
 
-Do not deploy until I explicitly say APPROVE DEPLOY.
+Do not deploy until I say exactly: APPROVE DEPLOY
 
-Begin.
+Begin from the correct workflow entry state.
 ```
 
-During the run, you should not manually invoke the specialist agents. Interact with the orchestrator only.
-
-Later, when the facilitator provides a change request, the launch pattern is:
+For a facilitator-provided change request later, tell the same orchestrator:
 
 ```text
-A new approved change request is available at change-requests/CR-001.md.
-Process it through the change-request workflow defined in SDLC_WORKFLOW.md.
-Do not deploy until I explicitly say APPROVE DEPLOY.
+Process change-requests/CR-001.md through the change-request workflow in SDLC_WORKFLOW.md. Preserve the CR audit artifacts and do not deploy until I say exactly: APPROVE DEPLOY
 ```
