@@ -27,3 +27,7 @@ You are **not** expected to create the BA, Architect, Frontend Developer, Backen
 - bypass failed gates;
 - deploy before the explicit approval point;
 - inspect the facilitator reference solution.
+
+## Agent configuration model
+
+The supplied specialist registrations under `.kiro/agents/` use thin JSON configs with external prompt files. Each JSON limits tools, write paths, and shell commands to the agent's role. Your orchestrator should follow the same pattern and use explicit sub-agent allow/trust lists.
